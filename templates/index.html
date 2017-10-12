@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block contenido %}
+<div class="ks-dashboard-tabbed-sidebar-widgets">
+                        <div class="row">
+                            <div class="col-xl-4">
+                                <div class="card ks-card-widget ks-widget-payment-total-amount ks-purple-light">
+                                    <h5 class="card-header">
+                                        Total de Marcaciones
+
+                                        <div class="dropdown ks-control">
+                                            <a class="btn btn-link ks-no-text ks-no-arrow" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <span class="ks-icon la la-ellipsis-h"></span>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                                                <a class="dropdown-item" href="#">Edit</a>
+                                                <a class="dropdown-item" href="#">Add Card</a>
+                                                <a class="dropdown-item" href="#">Delete</a>
+                                            </div>
+                                        </div>
+                                    </h5>
+                                    <div class="card-block">
+                                        <div class="ks-payment-total-amount-item-icon-block">
+                                            <span class="ks-icon la la-check ks-icon"></span>
+                                        </div>
+
+                                        <div class="ks-payment-total-amount-item-body">
+                                            <div class="ks-payment-total-amount-item-amount">
+                                                <span class="ks-amount">{{ marcaciones_todas }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4">
+                                <div class="card ks-card-widget ks-widget-payment-total-amount ks-green-light">
+                                    <h5 class="card-header">
+                                        Total Repositores
+
+                                        <div class="dropdown ks-control">
+                                            <a class="btn btn-link ks-no-text ks-no-arrow" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <span class="ks-icon la la-ellipsis-h"></span>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                                                <a class="dropdown-item" href="#">Edit</a>
+                                                <a class="dropdown-item" href="#">Add Card</a>
+                                                <a class="dropdown-item" href="#">Delete</a>
+                                            </div>
+                                        </div>
+                                    </h5>
+                                    <div class="card-block">
+                                        <div class="ks-payment-total-amount-item-icon-block">
+                                            <span class="la la-user ks-icon"></span>
+                                        </div>
+
+                                        <div class="ks-payment-total-amount-item-body">
+                                            <div class="ks-payment-total-amount-item-amount">
+                                                <span class="ks-amount">{{ usuarios.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4">
+                                <div class="card ks-card-widget ks-widget-payment-total-amount ks-pink-light">
+                                    <h5 class="card-header">
+                                        Total Adminstradores
+
+                                        <div class="dropdown ks-control">
+                                            <a class="btn btn-link ks-no-text ks-no-arrow" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <span class="ks-icon la la-ellipsis-h"></span>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                                                <a class="dropdown-item" href="#">Edit</a>
+                                                <a class="dropdown-item" href="#">Add Card</a>
+                                                <a class="dropdown-item" href="#">Delete</a>
+                                            </div>
+                                        </div>
+                                    </h5>
+                                    <div class="card-block">
+                                        <div class="ks-payment-total-amount-item-icon-block">
+                                            <span class="la la-user-plus ks-icon"></span>
+                                        </div>
+
+                                        <div class="ks-payment-total-amount-item-body">
+                                            <div class="ks-payment-total-amount-item-amount">
+                                                <span class="ks-amount">23</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="card ks-card-widget ks-widget-table">
+                                    <h5 class="card-header">
+                                        Marcaciones Recientes
+
+                                        <div class="ks-controls">
+                                            <a href="/marcaciones/" class="ks-control-link">Ver Todas</a>
+                                        </div>
+                                    </h5>
+                                    <div class="card-block">
+                                        <table class="table ks-payment-table-invoicing">
+                                            <tr>
+                                                <th width="1">#</th>
+                                                <th>Nombre del Repositor</th>
+                                                <th>Fecha</th>
+                                                <th>Hora</th>
+                                                <th width="1">Estado</th>
+                                            </tr>
+                                            {% for marcacion in marcaciones %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ marcacion.usuario.first_name }} {{ marcacion.usuario.last_name }}</td>
+                                                <td>{{ marcacion.fecha }}</td>
+                                                <td>{{ marcacion.hora }}</td>
+                                                <td>
+                                                    {% if marcacion.estado == "0" %}<span class="badge badge-success">Entrada</span>{% else %}<span class="badge badge-crusta">Salida</span> {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="col-lg-4">
+                                <div class="card panel panel-default ks-widget ks-widget-leader-board">
+                                    <div class="card-header">
+                                        Jefes de Supermercados ({{ jefes.count }})
+
+                                        <div class="ks-controls">
+                                            <a href="#" class="ks-control ks-update"><span class="ks-icon la la-plus"></span></a>
+                                        </div>
+                                    </div>
+                                    <div class="card-block ks-scrollable" data-height="270">
+                                        <table class="ks-table">
+                                            <tbody>
+                                            {% for jefe in jefes %}
+                                            <tr class="ks-first-place">
+                                                <td class="ks-user">
+                                                    <img src="{% static 'img/logo-blanco.png' %}" class="ks-avatar" width="55" height="55">
+                                                    <span class="badge badge-pill badge-default ks-label"><span>{{ forloop.counter }}</span></span>
+                                                </td>
+                                                <td class="ks-info">
+                                                    <a href="#" class="ks-name">{{ jefe.usuario.first_name }} {{ jefe.usuario.last_name }}</a>
+                                                    <div class="ks-description">@{{ jefe.usuario }}</div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            -->
+                        </div>
+</div>
+{% endblock %}

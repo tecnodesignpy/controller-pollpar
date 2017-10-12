@@ -1,0 +1,17 @@
+Django==1.9.7
+ez-setup==0.9
+gunicorn==19.6.0
+Pillow==3.3.0
+psycopg2==2.6.2
+virtualenv==13.1.2
+whitenoise==3.2.2
+django-password-reset==0.9
+
+djangorestframework==3.2.5
+django-threadlocals==0.8
+django-storages==1.5.1
+boto==2.44.0
+django-ckeditor==5.2.1
+django-rest-auth[with_social]
+django-cors-headers==2.1.0
+openpyxl==2.4.8
