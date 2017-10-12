@@ -93,9 +93,8 @@ def registrar_repositor(request):
 @login_required(None,'login','/login/')
 def listado_repositores(request):
     repositores = Usuario.objects.filter(esta_activo=True)
-    usuarios = Usuario.objects.filter(esta_activo=True)
-    porcentaje = int(usuarios.count()*100/300)
-    return render(request, 'listado_repositores.html',{'repositores':repositores,'usuarios':usuarios,'porcentaje':porcentaje})
+    porcentaje = int(repositores.count()*100/300)
+    return render(request, 'listado_repositores.html',{'repositores':repositores,'porcentaje':porcentaje})
 	
 @login_required(None,'login','/login/')	
 def editar_repositor(request,usuario):

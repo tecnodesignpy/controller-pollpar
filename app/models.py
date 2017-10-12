@@ -5,6 +5,15 @@ from django.db import models
 SEXO =(("Masculino", "Masculino"),("Femenino", "Femenino"))
 ENTRADA_SALIDA =(("0", "Entrada"),("1", "Salida"))
 
+class Usuario(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    telefono_id = models.CharField(max_length=40, blank=True, null=True)
+    sexo = models.CharField(max_length=40, choices=SEXO, blank=True, null=True)
+    legajo = models.CharField(max_length=40, blank=True, null=True)
+    esta_activo = models.BooleanField(default=False)
+	
+    def __str__(self):
+        return str(self.usuario)
 
 class Marcacione(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -43,12 +52,3 @@ class Perfile(models.Model):
     def __str__(self):
         return str(self.usuario)
 	
-class Usuario(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    telefono_id = models.CharField(max_length=40, blank=True, null=True)
-    sexo = models.CharField(max_length=40, choices=SEXO, blank=True, null=True)
-    legajo = models.CharField(max_length=40, blank=True, null=True)
-    esta_activo = models.BooleanField(default=False)
-	
-    def __str__(self):
-        return str(self.usuario)
