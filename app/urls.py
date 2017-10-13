@@ -12,6 +12,8 @@ urlpatterns = [
     url(r'^logout/$', views.logout_view),
     url(r'^registrar_repositor/', views.registrar_repositor),
     url(r'^editar_repositor/(?P<usuario>.+)/$', views.editar_repositor),
+    url(r'^inhabilitar_repositor/(?P<usuario>.+)/$', views.inhabilitar_repositor),
+    url(r'^habilitar_repositor/(?P<usuario>.+)/$', views.habilitar_repositor),
     url(r'^listado_repositores/', views.listado_repositores),
     url(r'^repositor/(?P<usuario>[-\d]+)/$', views.repositor),
     url(r'^marcaciones/', views.listado_marcaciones),

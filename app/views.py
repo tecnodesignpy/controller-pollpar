@@ -17,17 +17,22 @@ from openpyxl import Workbook
 #Nos devuelve un objeto resultado, en este caso un archivo de excel
 from django.http.response import HttpResponse
 from openpyxl.drawing.image import Image
-
+# Libreria para acceder a la fecha actual
+from datetime import *
 
 
 @login_required(None,'login','/login/')
 def index(request):
+    # obtener todos los repositores que marcaron presencia hoy
+    hoy = date.today().strftime('%d/%m/%Y')
+    marcantes_entrada = Marcacione.objects.filter(fecha=hoy).distinct('usuario').count()
+    # marcantes_salida = Marcacione.objects.filter(fecha=hoy,estado="1").distinct('usuario').count()
     marcaciones= Marcacione.objects.all().order_by('-id')[:5]
     marcaciones_todas= Marcacione.objects.all().count()
     jefes= JefeSupermercado.objects.all()
-    usuarios = Usuario.objects.filter(esta_activo=True)
+    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
     porcentaje = int(usuarios.count()*100/300)
-    return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'jefes':jefes,'usuarios':usuarios,'porcentaje':porcentaje})
+    return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'jefes':jefes,'usuarios':usuarios,'porcentaje':porcentaje, 'marcantes_entrada':marcantes_entrada, })
 	
 
 #@csrf_protect
@@ -63,7 +68,7 @@ def logout_view(request):
 	
 @login_required(None,'login','/login/')	
 def registrar_repositor(request):
-    usuarios = Usuario.objects.filter(esta_activo=True)
+    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
     porcentaje = int(usuarios.count()*100/300)
     if request.method == "POST":
         form = RegistroRepositorForm(request.POST)
@@ -80,7 +85,7 @@ def registrar_repositor(request):
 			#Obtenemos el id del usuario para crear su perfil
             usuario1= User.objects.latest('id')
             print("Entro 50 "+str(usuario1))
-            nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'],esta_activo=True)
+            nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'])
             return redirect('/listado_repositores')
         else:
             return render(request,'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
@@ -92,13 +97,13 @@ def registrar_repositor(request):
 
 @login_required(None,'login','/login/')
 def listado_repositores(request):
-    repositores = Usuario.objects.filter(esta_activo=True)
+    repositores = Usuario.objects.all()
     porcentaje = int(repositores.count()*100/300)
-    return render(request, 'listado_repositores.html',{'repositores':repositores,'porcentaje':porcentaje})
+    return render(request, 'listado_repositores.html',{'repositores':repositores,'porcentaje':porcentaje,})
 	
 @login_required(None,'login','/login/')	
 def editar_repositor(request,usuario):
-    usuarios = Usuario.objects.filter(esta_activo=True)
+    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
     porcentaje = int(usuarios.count()*100/300)
     if request.method == "POST":
         jefe_supermercados = request.POST.get('jefe_supermercado')
@@ -139,7 +144,7 @@ def editar_repositor(request,usuario):
 
 @login_required(None,'login','/login/')
 def repositor(request,usuario):
-    usuarios = Usuario.objects.filter(esta_activo=True)
+    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
     porcentaje = int(usuarios.count()*100/300)
     marcaciones= Marcacione.objects.filter(usuario=usuario).order_by('-fecha','-hora')
     if 'inicio' in request.GET and 'fin' in request.GET:
@@ -154,7 +159,7 @@ def repositor(request,usuario):
 	
 @login_required(None,'login','/login/')
 def listado_marcaciones(request):
-    usuarios = Usuario.objects.filter(esta_activo=True)
+    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
     porcentaje = int(usuarios.count()*100/300)
     marcaciones= Marcacione.objects.all().order_by('-fecha','-hora')
     if 'inicio' in request.GET and 'fin' in request.GET:
@@ -165,7 +170,22 @@ def listado_marcaciones(request):
         return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje})
     return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'usuarios':usuarios,'porcentaje':porcentaje})
 
-	
+
+@login_required(None,'login','/login/')
+def inhabilitar_repositor(request,usuario):
+    # cambia el estado de User a inactivo
+    inhabilitar_usuario = User.objects.get(id=usuario)
+    inhabilitar_usuario.is_active = False
+    inhabilitar_usuario.save()
+    return redirect('/listado_repositores')
+@login_required(None,'login','/login/')
+def habilitar_repositor(request,usuario):
+     # cambia el estado de User a activo
+    habilitar_usuario = User.objects.get(id=usuario)
+    habilitar_usuario.is_active = True
+    habilitar_usuario.save()
+    return redirect('/listado_repositores')
+
 #Nuestra clase hereda de la vista genérica TemplateView
 class ReportePersonasExcel(TemplateView):
      
@@ -247,5 +267,6 @@ def mi_error_404(request):
     nombre_template = '404.html'
  
     return page_not_found(request, template_name=nombre_template)
+
 
 	

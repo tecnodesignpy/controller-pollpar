@@ -10,7 +10,7 @@ class Usuario(models.Model):
     telefono_id = models.CharField(max_length=40, blank=True, null=True)
     sexo = models.CharField(max_length=40, choices=SEXO, blank=True, null=True)
     legajo = models.CharField(max_length=40, blank=True, null=True)
-    esta_activo = models.BooleanField(default=False)
+    # esta_activo = models.BooleanField(default=False)
 	
     def __str__(self):
         return str(self.usuario)

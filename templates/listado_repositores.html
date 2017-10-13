@@ -54,10 +54,18 @@
                                             <span class="la la-file-text-o ks-icon"></span>
                                             <span class="ks-text">Reportes</span>
                                         </a>
-                                        <a href="#" class="btn btn-danger" style="color: white">
+                                        
+                                        {% if repositor.usuario.is_active %}
+                                        <a href="/inhabilitar_repositor/{{repositor.usuario_id}}" class="btn btn-danger" style="color: white">
                                             <span class="la la-trash ks-icon"></span>
-                                            <span class="ks-text">Dar de Baja</span>
+                                            <span class="ks-text">Inhabilitar</span>
                                         </a>
+                                        {% else %}
+                                        <a href="/habilitar_repositor/{{repositor.usuario_id}}" class="btn btn-success" style="color: white">
+                                            <span class="la la-trash ks-icon"></span>
+                                            <span class="ks-text">Habilitar</span>
+                                        </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
