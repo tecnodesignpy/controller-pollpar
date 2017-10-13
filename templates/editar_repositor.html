@@ -69,33 +69,12 @@
                                 <input class="form-control" type="text" name="usuario" value="{{ usuario.usuario.username | default:''}}" id="example-usuario-input">
                             </div>
                         </div>
-                        <!--
-                        <div class="form-group row">
-                            <label for="default-input-rounded" class="col-sm-4 form-control-label">Jefe de Supermercado</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" name="jefe_supermercado">
-                                        <option value="{{ usuario.jefe.id }}">{{ usuario.jefe.usuario.first_name }} {{ usuario.jefe.usuario.last_name }}</option>
-                                        <option value="none">-</option>
-                                    {% for jefe in jefes %}
-                                        <option value="{{jefe.id}}">{{jefe.nombres}} {{jefe.apellidos}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        -->
+                       
                         <div class="form-group row">
                             <div class="text-center col-lg-12">
                                 <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                             </div>
-                            <!-- {% if habilitado %}
-                            <div class="text-center col-sm-12 col-md-6">
-                                <button type="button" class="btn btn-danger sweet-4">Inhabilitar APP</button>
-                            </div>
-                            {% else %}
-                            <div class="text-center col-sm-12 col-md-6">
-                                <button type="button" class="btn btn-success sweet-4">Habilitar APP</button>
-                            </div>
-                            {% endif %} -->
+                            
                         </div>
                     </form>
                 </div>
