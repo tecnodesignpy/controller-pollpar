@@ -24,7 +24,8 @@ from datetime import *
 @login_required(None,'login','/login/')
 def index(request):
     # obtener todos los repositores que marcaron presencia hoy
-    hoy = date.today().strftime('%d/%m/%Y')
+    hoy = date.today()
+    #.strftime('%d/%m/%Y')
     marcantes_entrada = Marcacione.objects.filter(fecha=hoy).distinct('usuario').count()
     # marcantes_salida = Marcacione.objects.filter(fecha=hoy,estado="1").distinct('usuario').count()
     marcaciones= Marcacione.objects.all().order_by('-id')[:5]
@@ -148,11 +149,15 @@ def repositor(request,usuario):
     porcentaje = int(usuarios.count()*100/300)
     marcaciones= Marcacione.objects.filter(usuario=usuario).order_by('-fecha','-hora')
     if 'inicio' in request.GET and 'fin' in request.GET:
-        inicio = request.GET.get('inicio')
-        fin = request.GET.get('fin')
+        f_inicio = request.GET.get('inicio')
+        f_fin = request.GET.get('fin')
+        inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
+        fin = datetime.strptime(f_fin, "%d/%m/%Y")
         marcaciones= Marcacione.objects.filter(usuario=usuario,fecha__range=[inicio, fin]).order_by('-fecha','-hora')
-        filtro_msg = "Filtro de fechas entre el "+str(inicio)+" y el "+str(fin)
+        filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
+        
         return render(request, 'repositor.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'usuario':usuario,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje})
+        
 		
     return render(request, 'repositor.html',{'marcaciones':marcaciones,'usuario':usuario,'usuarios':usuarios,'porcentaje':porcentaje})
 	
@@ -163,10 +168,12 @@ def listado_marcaciones(request):
     porcentaje = int(usuarios.count()*100/300)
     marcaciones= Marcacione.objects.all().order_by('-fecha','-hora')
     if 'inicio' in request.GET and 'fin' in request.GET:
-        inicio = request.GET.get('inicio')
-        fin = request.GET.get('fin')
+        f_inicio = request.GET.get('inicio')
+        f_fin = request.GET.get('fin')
+        inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
+        fin = datetime.strptime(f_fin, "%d/%m/%Y")
         marcaciones= Marcacione.objects.filter(fecha__range=[inicio, fin]).order_by('-fecha','-hora')
-        filtro_msg = "Filtro de fechas entre el "+str(inicio)+" y el "+str(fin)
+        filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
         return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje})
     return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'usuarios':usuarios,'porcentaje':porcentaje})
 

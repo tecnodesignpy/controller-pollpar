@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from datetime import *
 
 
 SEXO =(("Masculino", "Masculino"),("Femenino", "Femenino"))
@@ -21,7 +22,7 @@ class Marcacione(models.Model):
     estado = models.CharField(max_length=40, choices=ENTRADA_SALIDA, blank=True, null=True)
     latitud = models.CharField(max_length=200, blank=True, null=True)
     longitud = models.CharField(max_length=200, blank=True, null=True)
-    fecha = models.CharField(max_length=100,null=True, blank=True)
+    fecha = models.DateField(null=True, blank=True)
     hora = models.CharField(max_length=100,null=True, blank=True)
     observaciones = models.CharField(max_length=150, null=True, blank=True)
     device_id = models.CharField(max_length=200, null=True, blank=True)
@@ -30,6 +31,11 @@ class Marcacione(models.Model):
 	
     def __str__(self):
         return str(self.usuario)
+    
+    def save(self, *args, **kwargs):
+        v_fecha = str(self.fecha)
+        self.fecha = datetime.strptime(v_fecha,"%d/%m/%Y")
+        super(Marcacione, self).save(*args, **kwargs)
 
 
 class JefeSupermercado(models.Model):
