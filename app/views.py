@@ -21,20 +21,29 @@ from openpyxl.drawing.image import Image
 from datetime import *
 
 
+
 @login_required(None,'login','/login/')
 def index(request):
-    # obtener todos los repositores que marcaron presencia hoy
+    ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    #.strftime('%d/%m/%Y')
-    marcantes_entrada = Marcacione.objects.filter(fecha=hoy).distinct('usuario').count()
-    # marcantes_salida = Marcacione.objects.filter(fecha=hoy,estado="1").distinct('usuario').count()
-    marcaciones= Marcacione.objects.all().order_by('-id')[:5]
-    marcaciones_todas= Marcacione.objects.all().count()
-    jefes= JefeSupermercado.objects.all()
-    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
-    porcentaje = int(usuarios.count()*100/300)
-    return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'jefes':jefes,'usuarios':usuarios,'porcentaje':porcentaje, 'marcantes_entrada':marcantes_entrada, })
-	
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        # obtener todos los repositores que marcaron presencia hoy
+        hoy = date.today()
+        #.strftime('%d/%m/%Y')
+        marcantes_entrada = Marcacione.objects.filter(fecha=hoy).distinct('usuario').count()
+        # marcantes_salida = Marcacione.objects.filter(fecha=hoy,estado="1").distinct('usuario').count()
+        marcaciones= Marcacione.objects.all().order_by('-id')[:5]
+        marcaciones_todas= Marcacione.objects.all().count()
+        jefes= JefeSupermercado.objects.all()
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'jefes':jefes,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios, 'marcantes_entrada':marcantes_entrada, })
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 
 #@csrf_protect
 #@ensure_csrf_cookie	
@@ -48,16 +57,31 @@ def login_view(request):
         if user is not None:
             if user.is_superuser:
                 print(user)
+                ultimo_contrato = Contrato.objects.latest('id')
+                hoy = date.today()
                 login(request, user)
                 state = "Te has logueado correctamente!"
-                return redirect('/')
+                if ultimo_contrato.fecha_caducidad >= hoy:
+                    return redirect('/')
+                else:
+                    logout(request)
+                    state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+                    print(state)
+                    return render(request,'login.html',{'state':state})
             else:
                 state = "Tu cuenta no esta activa, por favor ponte en contacto con el administrador."
         else:
             state = "Tu nombre de usuario y/o contraseña no coinciden."
     if request.user.is_authenticated():
-        return redirect('/')
-				
+        ultimo_contrato = Contrato.objects.latest('id')
+        hoy = date.today()
+        if ultimo_contrato.fecha_caducidad >= hoy:
+            return redirect('/')
+        else:
+            print('77')
+            logout(request)
+            state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+            return render(request,'login.html',{'state':state})		
     return render(request,'login.html',{'state':state})
 
 @login_required(None, 'login', '/login/')
@@ -69,130 +93,221 @@ def logout_view(request):
 	
 @login_required(None,'login','/login/')	
 def registrar_repositor(request):
-    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
-    porcentaje = int(usuarios.count()*100/300)
-    if request.method == "POST":
-        form = RegistroRepositorForm(request.POST)
-        print("Entro 38")
-        if form.is_valid():
-            print("Entro 40")
-            new_user = User.objects.create_user(form.cleaned_data['username'], (form.cleaned_data['email'] or "controller@tecnodesign.com.py"), form.cleaned_data['username'])
-            print(new_user.id)
-            new_user.first_name = form.cleaned_data['nombres']
-            new_user.last_name = form.cleaned_data['apellidos']
-            new_user.save()
-            print("Entro 46")
-            #jefe_supermercados = request.POST.get('jefe_supermercado')
-			#Obtenemos el id del usuario para crear su perfil
-            usuario1= User.objects.latest('id')
-            print("Entro 50 "+str(usuario1))
-            nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'])
-            return redirect('/listado_repositores')
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        if ultimo_contrato.limite_usuarios >= usuarios.count():
+            if request.method == "POST":
+                form = RegistroRepositorForm(request.POST)
+                print("Entro 38")
+                if form.is_valid():
+                    print("Entro 40")
+                    new_user = User.objects.create_user(form.cleaned_data['username'], (form.cleaned_data['email'] or "controller@tecnodesign.com.py"), form.cleaned_data['username'])
+                    print(new_user.id)
+                    new_user.first_name = form.cleaned_data['nombres']
+                    new_user.last_name = form.cleaned_data['apellidos']
+                    new_user.save()
+                    print("Entro 46")
+                    #jefe_supermercados = request.POST.get('jefe_supermercado')
+                    #Obtenemos el id del usuario para crear su perfil
+                    usuario1= User.objects.latest('id')
+                    print("Entro 50 "+str(usuario1))
+                    nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'])
+                    return redirect('/listado_repositores')
+                else:
+                    return render(request,'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
+            else:
+                form = RegistroRepositorForm()
+                
+            return render(request, 'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
         else:
-            return render(request,'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
+            return redirect('/')
+            
     else:
-        form = RegistroRepositorForm()
-		
-    return render(request, 'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
-	
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
+
 
 @login_required(None,'login','/login/')
 def listado_repositores(request):
-    repositores = Usuario.objects.all()
-    porcentaje = int(repositores.count()*100/300)
-    return render(request, 'listado_repositores.html',{'repositores':repositores,'porcentaje':porcentaje,})
-	
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        repositores = Usuario.objects.all()
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(repositores.count()*100/limite_usuarios)
+        return render(request, 'listado_repositores.html',{'repositores':repositores,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
+
+@login_required(None,'login','/login/')
+def activos(request):
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        repositores = Usuario.objects.all()
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(repositores.count()*100/limite_usuarios)
+        return render(request, 'activos.html',{'usuarios':repositores,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
+
+@login_required(None,'login','/login/')
+def inactivos(request):
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        repositores = Usuario.objects.all()
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(repositores.count()*100/limite_usuarios)
+        return render(request, 'inactivos.html',{'usuarios':repositores,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
+
 @login_required(None,'login','/login/')	
 def editar_repositor(request,usuario):
-    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
-    porcentaje = int(usuarios.count()*100/300)
-    if request.method == "POST":
-        jefe_supermercados = request.POST.get('jefe_supermercado')
-        nombres = request.POST.get('nombres')
-        apellidos = request.POST.get('apellidos')
-        email = request.POST.get('email')
-        legajo = request.POST.get('legajo')
-        usuario1 = request.POST.get('usuario')
-        exclude_id = Usuario.objects.get(id=usuario)
-        if User.objects.filter(username=usuario1).exclude(username=exclude_id).exists():
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        if request.method == "POST":
+            jefe_supermercados = request.POST.get('jefe_supermercado')
+            nombres = request.POST.get('nombres')
+            apellidos = request.POST.get('apellidos')
+            email = request.POST.get('email')
+            legajo = request.POST.get('legajo')
+            usuario1 = request.POST.get('usuario')
+            exclude_id = Usuario.objects.get(id=usuario)
+            if User.objects.filter(username=usuario1).exclude(username=exclude_id).exists():
+                id2 = Usuario.objects.get(id=usuario)
+                form = EditarRepositorForm(instance=id2)
+                error_msg = "Ya existe el nombre de usuario "+usuario1+", use otro diferente."
+                return render(request, 'editar_repositor.html',{'form':form,'usuario':id2,'error_msg':error_msg,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+            else:
+                editar_personal = Usuario.objects.get(id=usuario)
+                editar_personal.legajo = legajo
+                editar_personal.save()
+                editar_usuario = User.objects.get(username=editar_personal)
+                editar_usuario.first_name = nombres
+                editar_usuario.last_name = apellidos
+                editar_usuario.email = email
+                editar_usuario.username = usuario1
+                editar_usuario.save()
+                return redirect('/listado_repositores')
+        else:
             id2 = Usuario.objects.get(id=usuario)
+            print(id2.usuario.id)
+            user_repositor = User.objects.get(id=id2.usuario.id)
             form = EditarRepositorForm(instance=id2)
-            error_msg = "Ya existe el nombre de usuario "+usuario1+", use otro diferente."
-            return render(request, 'editar_repositor.html',{'form':form,'usuario':id2,'error_msg':error_msg,'usuarios':usuarios,'porcentaje':porcentaje})
-        else:
-            editar_personal = Usuario.objects.get(id=usuario)
-            editar_personal.legajo = legajo
-            editar_personal.save()
-            editar_usuario = User.objects.get(username=editar_personal)
-            editar_usuario.first_name = nombres
-            editar_usuario.last_name = apellidos
-            editar_usuario.email = email
-            editar_usuario.username = usuario1
-            editar_usuario.save()
-            return redirect('/listado_repositores')
+            if user_repositor.is_active:   
+                habilitado = True
+            else:
+                habilitado = False
+            
+        return render(request, 'editar_repositor.html',{'form':form,'usuario':id2,'habilitado':habilitado,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
     else:
-        id2 = Usuario.objects.get(id=usuario)
-        print(id2.usuario.id)
-        user_repositor = User.objects.get(id=id2.usuario.id)
-        form = EditarRepositorForm(instance=id2)
-        if user_repositor.is_active:   
-            habilitado = True
-        else:
-            habilitado = False
-		
-    return render(request, 'editar_repositor.html',{'form':form,'usuario':id2,'habilitado':habilitado,'usuarios':usuarios,'porcentaje':porcentaje})
-	
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 
 @login_required(None,'login','/login/')
 def repositor(request,usuario):
-    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
-    porcentaje = int(usuarios.count()*100/300)
-    marcaciones= Marcacione.objects.filter(usuario=usuario).order_by('-fecha','-hora')
-    if 'inicio' in request.GET and 'fin' in request.GET:
-        f_inicio = request.GET.get('inicio')
-        f_fin = request.GET.get('fin')
-        inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
-        fin = datetime.strptime(f_fin, "%d/%m/%Y")
-        marcaciones= Marcacione.objects.filter(usuario=usuario,fecha__range=[inicio, fin]).order_by('-fecha','-hora')
-        filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
-        
-        return render(request, 'repositor.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'usuario':usuario,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje})
-        
-		
-    return render(request, 'repositor.html',{'marcaciones':marcaciones,'usuario':usuario,'usuarios':usuarios,'porcentaje':porcentaje})
-	
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        marcaciones= Marcacione.objects.filter(usuario=usuario).order_by('-fecha','-hora')
+        if 'inicio' in request.GET and 'fin' in request.GET:
+            f_inicio = request.GET.get('inicio')
+            f_fin = request.GET.get('fin')
+            inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
+            fin = datetime.strptime(f_fin, "%d/%m/%Y")
+            marcaciones= Marcacione.objects.filter(usuario=usuario,fecha__range=[inicio, fin]).order_by('-fecha','-hora')
+            filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
+            
+            return render(request, 'repositor.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'usuario':usuario,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+            
+            
+        return render(request, 'repositor.html',{'marcaciones':marcaciones,'usuario':usuario,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 	
 @login_required(None,'login','/login/')
 def listado_marcaciones(request):
-    usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
-    porcentaje = int(usuarios.count()*100/300)
-    marcaciones= Marcacione.objects.all().order_by('-fecha','-hora')
-    if 'inicio' in request.GET and 'fin' in request.GET:
-        f_inicio = request.GET.get('inicio')
-        f_fin = request.GET.get('fin')
-        inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
-        fin = datetime.strptime(f_fin, "%d/%m/%Y")
-        marcaciones= Marcacione.objects.filter(fecha__range=[inicio, fin]).order_by('-fecha','-hora')
-        filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
-        return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje})
-    return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'usuarios':usuarios,'porcentaje':porcentaje})
-
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        marcaciones= Marcacione.objects.all().order_by('-fecha','-hora')
+        if 'inicio' in request.GET and 'fin' in request.GET:
+            f_inicio = request.GET.get('inicio')
+            f_fin = request.GET.get('fin')
+            inicio = datetime.strptime(f_inicio, "%d/%m/%Y")
+            fin = datetime.strptime(f_fin, "%d/%m/%Y")
+            marcaciones= Marcacione.objects.filter(fecha__range=[inicio, fin]).order_by('-fecha','-hora')
+            filtro_msg = "Filtro de fechas entre el "+str(f_inicio)+" y el "+str(f_fin)
+            return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'filtro_msg':filtro_msg,'inicio':inicio,'fin':fin,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+        return render(request, 'marcaciones.html',{'marcaciones':marcaciones,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 
 @login_required(None,'login','/login/')
 def inhabilitar_repositor(request,usuario):
-    # cambia el estado de User a inactivo
-    inhabilitar_usuario = User.objects.get(id=usuario)
-    inhabilitar_usuario.is_active = False
-    inhabilitar_usuario.save()
-    return redirect('/listado_repositores')
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        # cambia el estado de User a inactivo
+        inhabilitar_usuario = User.objects.get(id=usuario)
+        inhabilitar_usuario.is_active = False
+        inhabilitar_usuario.save()
+        return redirect('/listado_repositores')
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 @login_required(None,'login','/login/')
 def habilitar_repositor(request,usuario):
-     # cambia el estado de User a activo
-    habilitar_usuario = User.objects.get(id=usuario)
-    habilitar_usuario.is_active = True
-    habilitar_usuario.save()
-    return redirect('/listado_repositores')
-
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        # cambia el estado de User a activo
+        habilitar_usuario = User.objects.get(id=usuario)
+        habilitar_usuario.is_active = True
+        habilitar_usuario.save()
+        return redirect('/listado_repositores')
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
 #Nuestra clase hereda de la vista genérica TemplateView
 class ReportePersonasExcel(TemplateView):
      

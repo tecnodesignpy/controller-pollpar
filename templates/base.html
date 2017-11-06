@@ -168,7 +168,9 @@
                     </a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item ks-active" href="/listado_repositores/">Listado</a>
-                        <a class="dropdown-item" href="/registrar_repositor/">Agregar Repositor</a>
+                        {% if limite_usuarios > usuarios.count %}
+                            <a class="dropdown-item" href="/registrar_repositor/">Agregar Repositor</a>
+                        {% endif %}
                     </div>
                 </li>
                 <li class="nav-item dropdown">
@@ -178,8 +180,8 @@
                     </a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item ks-active" href="#">TXT RHPro</a>
-                        <a class="dropdown-item" href="#">Repositores Activos</a>
-                        <a class="dropdown-item" href="#">Repositores Inactivos</a>
+                        <a class="dropdown-item" href="/activos/">Repositores Activos</a>
+                        <a class="dropdown-item" href="/inactivos/">Repositores Inactivos</a>
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"  href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <span>Marcaciones</span>
@@ -207,7 +209,7 @@
                     </div>
                     <div class="ks-description">
                         <span class="ks-amount">{{ porcentaje }}%</span>
-                        <span class="ks-text">({{ usuarios.count }} de 300)</span>
+                        <span class="ks-text">({{ usuarios.count }} de {{ limite_usuarios }})</span>
                     </div>
                 </div>
                 <div class="ks-sidebar-copyright">© 2017 Tecnodesign. Derechos Reservados</div>

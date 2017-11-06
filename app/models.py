@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from datetime import *
-
+from django.utils import timezone
 
 SEXO =(("Masculino", "Masculino"),("Femenino", "Femenino"))
 ENTRADA_SALIDA =(("0", "Entrada"),("1", "Salida"))
@@ -57,4 +57,18 @@ class Perfile(models.Model):
 	
     def __str__(self):
         return str(self.usuario)
-	
+
+
+class Contrato(models.Model):
+    limite_usuarios = models.IntegerField(default=0) 
+    fecha_caducidad = models.DateField(null=True, blank=True)
+    creado = models.DateTimeField(editable=False)
+    modificado = models.DateTimeField(editable=False)
+    
+    
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        if not self.id:
+            self.creado = timezone.now()
+        self.modificado = timezone.now()
+        return super(Contrato, self).save(*args, **kwargs)

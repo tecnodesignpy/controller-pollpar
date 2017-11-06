@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from .models import *
 
+
 # Register your models here.
 class MarcacioneAdmin(admin.ModelAdmin):
 
@@ -45,7 +46,14 @@ class JefeSupermercadoAdmin(admin.ModelAdmin):
     )
     ordering = ('usuario',)
 
-		
+class ContratoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'limite_usuarios',
+        'fecha_caducidad',
+        'creado',
+        'modificado',
+    )		
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 	
@@ -54,3 +62,4 @@ _register(Marcacione,MarcacioneAdmin)
 _register(Perfile,PerfileAdmin)
 _register(Usuario,UsuarioAdmin)
 _register(JefeSupermercado,JefeSupermercadoAdmin)
+_register(Contrato ,ContratoAdmin)

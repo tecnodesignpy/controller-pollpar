@@ -15,6 +15,8 @@ urlpatterns = [
     url(r'^inhabilitar_repositor/(?P<usuario>.+)/$', views.inhabilitar_repositor),
     url(r'^habilitar_repositor/(?P<usuario>.+)/$', views.habilitar_repositor),
     url(r'^listado_repositores/', views.listado_repositores),
+    url(r'^activos/', views.activos),
+    url(r'^inactivos/', views.inactivos),
     url(r'^repositor/(?P<usuario>[-\d]+)/$', views.repositor),
     url(r'^marcaciones/', views.listado_marcaciones),
     url(r'^reportes_marcaciones_general/$',ReportePersonasExcel.as_view(), name="reporte_personas_excel"),
