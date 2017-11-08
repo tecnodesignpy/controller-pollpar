@@ -26,7 +26,8 @@ from datetime import *
 def index(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         # obtener todos los repositores que marcaron presencia hoy
         hoy = date.today()
         #.strftime('%d/%m/%Y')
@@ -60,7 +61,7 @@ def login_view(request):
                 hoy = date.today()
                 login(request, user)
                 state = "Te has logueado correctamente!"
-                if ultimo_contrato.fecha_caducidad >= hoy:
+                if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
                     return redirect('/')
                 else:
                     logout(request)
@@ -94,7 +95,8 @@ def logout_view(request):
 def registrar_repositor(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
@@ -136,7 +138,8 @@ def registrar_repositor(request):
 def registrar_admin(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
@@ -179,7 +182,8 @@ def registrar_admin(request):
 def listado_repositores(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         repositores = Usuario.objects.all()
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(repositores.count()*100/limite_usuarios)
@@ -194,7 +198,8 @@ def listado_repositores(request):
 def activos(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         repositores = Usuario.objects.all()
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(repositores.count()*100/limite_usuarios)
@@ -209,7 +214,8 @@ def activos(request):
 def inactivos(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         repositores = Usuario.objects.all()
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(repositores.count()*100/limite_usuarios)
@@ -224,7 +230,8 @@ def inactivos(request):
 def editar_repositor(request,usuario):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
@@ -273,7 +280,8 @@ def editar_repositor(request,usuario):
 def repositor(request,usuario):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
@@ -300,7 +308,8 @@ def repositor(request,usuario):
 def listado_marcaciones(request):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
@@ -324,7 +333,8 @@ def listado_marcaciones(request):
 def inhabilitar_repositor(request,usuario):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         # cambia el estado de User a inactivo
         inhabilitar_usuario = User.objects.get(id=usuario)
         inhabilitar_usuario.is_active = False
@@ -339,7 +349,8 @@ def inhabilitar_repositor(request,usuario):
 def habilitar_repositor(request,usuario):
     ultimo_contrato = Contrato.objects.latest('id')
     hoy = date.today()
-    if ultimo_contrato.fecha_caducidad >= hoy:
+    user = request.user
+    if ultimo_contrato.fecha_caducidad >= hoy or user.is_superuser:
         # cambia el estado de User a activo
         habilitar_usuario = User.objects.get(id=usuario)
         habilitar_usuario.is_active = True
