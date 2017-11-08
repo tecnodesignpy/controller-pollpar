@@ -19,15 +19,6 @@ class MarcacioneAdmin(admin.ModelAdmin):
     list_filter = ('fecha','usuario',)
     ordering = ('usuario','-fecha',)
 	
-class PerfileAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'id',
-        'usuario',
-        'jefe',
-    )
-    ordering = ('usuario',)
-	
 class UsuarioAdmin(admin.ModelAdmin):
 
     list_display = (
@@ -36,15 +27,6 @@ class UsuarioAdmin(admin.ModelAdmin):
     )
     ordering = ('usuario',)
 	
-class JefeSupermercadoAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'id',
-        'usuario',
-        'nombres',
-        'apellidos',
-    )
-    ordering = ('usuario',)
 
 class ContratoAdmin(admin.ModelAdmin):
     list_display = (
@@ -59,7 +41,5 @@ def _register(model, admin_class):
 	
 	
 _register(Marcacione,MarcacioneAdmin)
-_register(Perfile,PerfileAdmin)
 _register(Usuario,UsuarioAdmin)
-_register(JefeSupermercado,JefeSupermercadoAdmin)
 _register(Contrato ,ContratoAdmin)

@@ -11,8 +11,7 @@ class Usuario(models.Model):
     telefono_id = models.CharField(max_length=40, blank=True, null=True)
     sexo = models.CharField(max_length=40, choices=SEXO, blank=True, null=True)
     legajo = models.CharField(max_length=40, blank=True, null=True)
-    # esta_activo = models.BooleanField(default=False)
-	
+    	
     def __str__(self):
         return str(self.usuario)
 
@@ -38,26 +37,6 @@ class Marcacione(models.Model):
         super(Marcacione, self).save(*args, **kwargs)
 
 
-class JefeSupermercado(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    nombres = models.CharField(max_length=50, blank=True, null=True)
-    apellidos = models.CharField(max_length=50, blank=True, null=True)
-    email = models.CharField(max_length=50, blank=True, null=True)
-	
-    def __str__(self):
-        return str(self.usuario)
-	
-class Perfile(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    telefono_id = models.CharField(max_length=40, blank=True, null=True)
-    sexo = models.CharField(max_length=40, choices=SEXO, blank=True, null=True)
-    legajo = models.CharField(max_length=40, blank=True, null=True)
-    jefe = models.ForeignKey(JefeSupermercado, on_delete=models.CASCADE, blank=True, null=True)
-    esta_activo = models.BooleanField(default=False)
-	
-    def __str__(self):
-        return str(self.usuario)
-
 
 class Contrato(models.Model):
     limite_usuarios = models.IntegerField(default=0) 
@@ -72,3 +51,5 @@ class Contrato(models.Model):
             self.creado = timezone.now()
         self.modificado = timezone.now()
         return super(Contrato, self).save(*args, **kwargs)
+
+

@@ -34,11 +34,10 @@ def index(request):
         # marcantes_salida = Marcacione.objects.filter(fecha=hoy,estado="1").distinct('usuario').count()
         marcaciones= Marcacione.objects.all().order_by('-id')[:5]
         marcaciones_todas= Marcacione.objects.all().count()
-        jefes= JefeSupermercado.objects.all()
         usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
         limite_usuarios = ultimo_contrato.limite_usuarios
         porcentaje = int(usuarios.count()*100/limite_usuarios)
-        return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'jefes':jefes,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios, 'marcantes_entrada':marcantes_entrada, })
+        return render(request, 'index.html',{'marcaciones':marcaciones,'marcaciones_todas':marcaciones_todas,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios, 'marcantes_entrada':marcantes_entrada, })
     else:
         logout(request)
         state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
@@ -55,7 +54,7 @@ def login_view(request):
         password = request.POST.get("password")
         user = authenticate(username=username, password=password)
         if user is not None:
-            if user.is_superuser:
+            if user.is_staff:
                 print(user)
                 ultimo_contrato = Contrato.objects.latest('id')
                 hoy = date.today()
@@ -118,11 +117,54 @@ def registrar_repositor(request):
                     nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'])
                     return redirect('/listado_repositores')
                 else:
-                    return render(request,'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
+                    return render(request,'registrar_admin.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
             else:
                 form = RegistroRepositorForm()
                 
             return render(request, 'registrar_repositor.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
+        else:
+            return redirect('/')
+            
+    else:
+        logout(request)
+        state = "Tu cuenta ha caducado, por favor ponte en contacto con el administrador."
+        print(state)
+        return render(request,'login.html',{'state':state})
+
+
+@login_required(None,'login','/login/')	
+def registrar_admin(request):
+    ultimo_contrato = Contrato.objects.latest('id')
+    hoy = date.today()
+    if ultimo_contrato.fecha_caducidad >= hoy:
+        usuarios = User.objects.filter(is_active=True,is_superuser=False, is_staff=False)
+        limite_usuarios = ultimo_contrato.limite_usuarios
+        porcentaje = int(usuarios.count()*100/limite_usuarios)
+        if ultimo_contrato.limite_usuarios >= usuarios.count():
+            if request.method == "POST":
+                form = RegistroRepositorForm(request.POST)
+                print("Entro 38")
+                if form.is_valid():
+                    print("Entro 40")
+                    new_user = User.objects.create_user(form.cleaned_data['username'], (form.cleaned_data['email'] or "controller@tecnodesign.com.py"), form.cleaned_data['username'])
+                    print(new_user.id)
+                    new_user.first_name = form.cleaned_data['nombres']
+                    new_user.last_name = form.cleaned_data['apellidos']
+                    new_user.is_staff = True
+                    new_user.save()
+                    print("Entro 46")
+                    #jefe_supermercados = request.POST.get('jefe_supermercado')
+                    #Obtenemos el id del usuario para crear su perfil
+                    usuario1= User.objects.latest('id')
+                    print("Entro 50 "+str(usuario1))
+                    nuevo_personal = Usuario.objects.create(usuario=usuario1,legajo=form.cleaned_data['legajo'])
+                    return redirect('/listado_repositores')
+                else:
+                    return render(request,'registrar_admin.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje})
+            else:
+                form = RegistroRepositorForm()
+                
+            return render(request, 'registrar_admin.html',{'form':form,'usuarios':usuarios,'porcentaje':porcentaje,'limite_usuarios':limite_usuarios})
         else:
             return redirect('/')
             
